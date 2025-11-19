@@ -1,0 +1,23 @@
+[
+  {
+    "name": "index.md",
+    "title": "Void Codebase Guide",
+    "path": "md/index.md",
+    "fileName": "index",
+    "id": "void-codebase-guide"
+  },
+  {
+    "name": "raw-how-to-contribute.md",
+    "title": "Contributing to Visual Studio Code",
+    "path": "md/raw-how-to-contribute.md",
+    "fileName": "raw-how-to-contribute",
+    "id": "contributing-to-visual-studio-code"
+  },
+  {
+    "name": "test-text.md",
+    "title": "本地运行 VSCode",
+    "path": "md/test-text.md",
+    "fileName": "test-text",
+    "id": "-vscode"
+  }
+]

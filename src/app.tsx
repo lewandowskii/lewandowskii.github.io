@@ -1,13 +1,7 @@
 import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
-import {
-  AvatarDropdown,
-  AvatarName,
-  Footer,
-  Question,
-  SelectLang,
-} from '@/components';
+import { AvatarDropdown, AvatarName, Footer, Question } from '@/components';
 import '@ant-design/v5-patch-for-react-19';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
@@ -16,7 +10,6 @@ import { errorConfig } from './requestErrorConfig';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
-
 const mockUser = {
   data: {
     name: 'Serati Ma',
@@ -73,23 +66,38 @@ const mockUser = {
 };
 /**
  * @see https://umijs.org/docs/api/runtime-config#getinitialstate
+ * 一些异步操作放在这里
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
   currentUser?: API.CurrentUser;
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+  mdMenu?: {
+    name: string;
+    title: string;
+    path: string;
+    id: string;
+    fileName: string;
+  }[];
 }> {
   const fetchUserInfo = async () => {
     try {
-      // const msg = await queryCurrentUser({
-      //   skipErrorHandler: true,
-      // });
       return mockUser.data;
     } catch (_error) {
       history.push(loginPath);
     }
     return undefined;
+  };
+
+  const fetchMdIndex = async () => {
+    try {
+      const res = await fetch('/md/md_files.json');
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // ignore
+    }
+    return [];
   };
   // 如果不是登录页面，执行
   const { location } = history;
@@ -99,28 +107,49 @@ export async function getInitialState(): Promise<{
     )
   ) {
     const currentUser = await fetchUserInfo();
+    const mdMenu = await fetchMdIndex();
     return {
       fetchUserInfo,
       currentUser,
       settings: defaultSettings as Partial<LayoutSettings>,
+      mdMenu,
     };
   }
+  const mdMenu = await fetchMdIndex();
   return {
     fetchUserInfo,
     settings: defaultSettings as Partial<LayoutSettings>,
+    mdMenu,
   };
 }
-
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({
   initialState,
   setInitialState,
 }) => {
+  console.log('initialState', initialState);
   return {
-    actionsRender: () => [
-      <Question key="doc" />,
-      <SelectLang key="SelectLang" />,
-    ],
+    menu: {
+      request: async (params: Record<string, any>, defaultMenuData) => {
+        const mdMenu = initialState?.mdMenu ?? [];
+        const blogSubMenu = mdMenu.map((m) => ({
+          path: `/blog/${m.fileName}`, // 确保这里是正确的路径
+          name: m.title,
+          key: m.id || m.name,
+        }));
+        return [
+          // ...defaultMenuData,
+          {
+            path: '/blog',
+            name: '博客',
+            // icon: "up",
+            component: './blog/Welcome',
+            routes: blogSubMenu,
+          },
+        ];
+      },
+    },
+    actionsRender: () => [<Question key="doc" />],
     avatarProps: {
       src: initialState?.currentUser?.avatar,
       title: <AvatarName />,
