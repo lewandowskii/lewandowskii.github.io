@@ -3,8 +3,7 @@ import 'markdown-navbar/dist/navbar.css';
 import React from 'react';
 
 /**
- * 每个单独的卡片，为了复用样式抽成了组件
- * @param param0
+ * 每个单独的卡片，为了复用样式抽成了123
  * @returns
  */
 const InfoCard: React.FC<{
@@ -19,7 +18,6 @@ const InfoCard: React.FC<{
   return (
     <div
       style={{
-        backgroundColor: token.colorBgContainer,
         boxShadow: token.boxShadow,
         borderRadius: '8px',
         fontSize: '14px',
@@ -74,9 +72,7 @@ const InfoCard: React.FC<{
       >
         {desc}
       </div>
-      <a href={href} target="_blank" rel="noreferrer">
-        了解更多 {'>'}
-      </a>
+      <p>xxnn</p>
     </div>
   );
 };
