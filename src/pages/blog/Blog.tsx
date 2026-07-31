@@ -1,6 +1,10 @@
-import { PageContainer } from '@ant-design/pro-components';
-import { useModel, useParams } from '@umijs/max';
-import { Card, theme } from 'antd';
+import {
+  ArrowLeftOutlined,
+  ClockCircleOutlined,
+  MenuOutlined,
+} from '@ant-design/icons';
+import { Link, useParams } from '@umijs/max';
+import { Alert, Button, Drawer, Skeleton, Space, Tag, Typography } from 'antd';
 import MarkNav from 'markdown-navbar';
 import 'markdown-navbar/dist/navbar.css';
 import React, { useEffect, useState } from 'react';
@@ -11,60 +15,93 @@ import rehypeSanitize from 'rehype-sanitize';
 import remarkGemoji from 'remark-gemoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import BlogShell from './BlogShell';
 import './styles.css';
+import { ROUTE_PATHS } from '../../routes/blogRoutes';
+
+const { Text } = Typography;
 
 const Blog: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // 提取 path 参数
-  const [mdContent, setMdContent] = useState('');
-  const [navVisible, setNavVisible] = useState(true);
+  const { id } = useParams<{ id: string }>();
+  const [content, setContent] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  console.log('Blog path:', id);
   useEffect(() => {
-    fetch('/md/' + id + '.md')
-      .then((res) => res.text())
-      .then((text) => setMdContent(text));
-  }, [id]); // 添加 path 作为依赖
+    setLoading(true);
+    setError(false);
+    fetch(`/md/${id}.md`)
+      .then((response) => {
+        if (!response.ok) throw new Error('Not found');
+        return response.text();
+      })
+      .then(setContent)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [id]);
 
-  const { token } = theme.useToken();
-  const { initialState } = useModel('@@initialState');
+  const readingMinutes = Math.max(3, Math.ceil(content.length / 900));
+  const outline = <MarkNav source={content} />;
+
   return (
-    <PageContainer header={{ title: '', breadcrumb: undefined }}>
-      <Card
-        style={{
-          borderRadius: 8,
-        }}
-        styles={{
-          body: {
-            backgroundImage:
-              initialState?.settings?.navTheme === 'realDark'
-                ? 'background-image: linear-gradient(75deg, #1A1B1F 0%, #191C1F 100%)'
-                : 'background-image: linear-gradient(75deg, #FBFDFF 0%, #F5F7FF 100%)',
-          },
-        }}
-      >
-        <div className="App">
-          <div className="article-container">
-            <Markdown
-              remarkPlugins={[remarkGfm, remarkMath, remarkGemoji]}
-              rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeKatex]}
-            >
-              {mdContent}
-            </Markdown>
-          </div>
-          <div className={`nav-container ${navVisible ? 'show' : 'hide'}`}>
-            <div
-              className="toggle-btn"
-              onClick={() => {
-                setNavVisible(!navVisible);
-              }}
-            >
-              {navVisible ? 'MENU →' : '← MENU'}
-            </div>
-            <MarkNav source={mdContent} />
-          </div>
+    <BlogShell compact>
+      <main className="reading-shell">
+        <header className="reading-header">
+          <Link to={ROUTE_PATHS.home}>
+            <Button type="text" icon={<ArrowLeftOutlined />}>
+              返回文章列表
+            </Button>
+          </Link>
+          <Space wrap>
+            <Tag>源码阅读</Tag>
+            <Text type="secondary">
+              <ClockCircleOutlined /> 约 {readingMinutes} 分钟
+            </Text>
+          </Space>
+          <Button
+            className="outline-trigger"
+            icon={<MenuOutlined />}
+            onClick={() => setDrawerOpen(true)}
+          >
+            目录
+          </Button>
+        </header>
+
+        <div className="reading-grid">
+          <article className="markdown-article">
+            {loading && <Skeleton active paragraph={{ rows: 12 }} />}
+            {error && (
+              <Alert
+                type="error"
+                showIcon
+                message="文章没有找到"
+                description="这篇文章可能已移动，返回首页看看其他内容吧。"
+              />
+            )}
+            {!loading && !error && (
+              <Markdown
+                remarkPlugins={[remarkGfm, remarkMath, remarkGemoji]}
+                rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeKatex]}
+              >
+                {content}
+              </Markdown>
+            )}
+          </article>
+          <aside className="article-outline">
+            <Text className="outline-label">ON THIS PAGE</Text>
+            {outline}
+          </aside>
         </div>
-      </Card>
-    </PageContainer>
+      </main>
+      <Drawer
+        title="文章目录"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      >
+        {outline}
+      </Drawer>
+    </BlogShell>
   );
 };
 

@@ -1,40 +1,38 @@
+import { ROUTE_PATHS } from '../src/routes/blogRoutes';
+
 export default [
   {
-    path: '/user',
+    path: ROUTE_PATHS.home,
     layout: false,
-    routes: [{ name: '登录', path: '/user/login', component: './user/login' }],
+    component: './blog/Home',
   },
   {
-    path: '/welcome',
-    name: '欢迎',
-    icon: 'smile',
-    component: './Welcome',
-  },
-  {
-    path: '/blog',
-    name: '博客',
-    icon: 'read',
-    // component: "./blog/Blog",
+    path: ROUTE_PATHS.blog.root,
+    layout: false,
     routes: [
       {
-        path: '/blog/:id',
-        name: '文章详情',
+        path: ROUTE_PATHS.blog.detail,
         component: './blog/Blog',
-        // headerRender: false,
       },
     ],
   },
   {
-    path: '/admin',
-    name: '管理页',
-    icon: 'crown',
-    access: 'canAdmin',
+    path: ROUTE_PATHS.study.root,
+    layout: false,
     routes: [
-      { path: '/admin', redirect: '/admin/sub-page' },
-      { path: '/admin/sub-page', name: '二级管理页', component: './Admin' },
+      {
+        path: ROUTE_PATHS.study.reactRender,
+        component: './blog/ReactJourney',
+      },
+      {
+        path: ROUTE_PATHS.study.miniReact,
+        component: './blog/MiniReactLab',
+      },
     ],
   },
-  // { name: "查询表格", icon: "table", path: "/list", component: "./table-list" },
-  { path: '/', redirect: '/welcome' },
-  { path: '*', layout: false, component: './404' },
+  {
+    path: '*',
+    layout: false,
+    component: './404',
+  },
 ];

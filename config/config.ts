@@ -79,7 +79,7 @@ export default defineConfig({
    * @name layout 插件
    * @doc https://umijs.org/docs/max/layout-menu
    */
-  title: 'Ant Design Pro',
+  title: 'Miao Devlog',
   layout: {
     locale: true,
     ...defaultSettings,
@@ -107,7 +107,10 @@ export default defineConfig({
       theme: {
         cssVar: true,
         token: {
-          fontFamily: 'AlibabaSans, sans-serif',
+          fontFamily:
+            '"Avenir Next", "Noto Sans SC", "Microsoft YaHei", sans-serif',
+          colorPrimary: '#087f8c',
+          borderRadius: 6,
         },
       },
     },
